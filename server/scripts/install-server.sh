@@ -28,8 +28,9 @@ REPO_ROOT="$(cd -- "${SERVER_DIR}/.." >/dev/null 2>&1 && pwd -P)"
 
 ENV_FILE="${SERVER_DIR}/.env"
 ENV_EXAMPLE="${REPO_ROOT}/.env.example"
-ECOSYSTEM_FILE="${REPO_ROOT}/scripts/ecosystem.config.cjs"
-NGINX_EXAMPLE="${REPO_ROOT}/scripts/nginx-example.conf"
+# Deployment artifacts live under server/scripts (this script's own directory).
+ECOSYSTEM_FILE="${SCRIPT_DIR}/ecosystem.config.cjs"
+NGINX_EXAMPLE="${SCRIPT_DIR}/nginx-example.conf"
 
 # גרסת ה-major של Node שתותקן דרך NodeSource (LTS).
 NODE_MAJOR=20

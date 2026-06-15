@@ -11,16 +11,20 @@
 //     production mode and enforces SYNC_KEY_PEPPER.
 //   - `cwd` MUST be the server directory so relative paths resolve correctly,
 //     in particular DB_PATH (default ./data/draftsync.db) and server/.env.
-//     This file lives in server/scripts, so the server directory is '..'.
-//   - `script` is relative to `cwd`, i.e. server/dist/index.js.
+//   - Paths are derived from __dirname (this file lives in server/scripts), so
+//     `pm2 start` works no matter which directory you launch it from.
+
+const path = require('path');
+
+// server/scripts/ -> server/
+const serverDir = path.resolve(__dirname, '..');
 
 module.exports = {
   apps: [
     {
       name: 'mds-server',
-      script: 'dist/index.js',
-      // Server directory, relative to this config file (server/scripts/).
-      cwd: '..',
+      script: path.join(serverDir, 'dist', 'index.js'),
+      cwd: serverDir,
       instances: 1,
       exec_mode: 'fork',
       autorestart: true,

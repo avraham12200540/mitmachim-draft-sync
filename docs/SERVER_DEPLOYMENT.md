@@ -195,10 +195,10 @@ PM2 שומר על השרת חי, מפעיל אותו מחדש בקריסה, ומ
 sudo npm install -g pm2
 ```
 
-הפעילו את האפליקציה דרך `scripts/ecosystem.config.cjs` (מורץ משורש המאגר):
+הפעילו את האפליקציה דרך `server/scripts/ecosystem.config.cjs` (מורץ משורש המאגר):
 
 ```bash
-pm2 start scripts/ecosystem.config.cjs
+pm2 start server/scripts/ecosystem.config.cjs
 ```
 
 > קובץ ה‑`ecosystem` מפעיל את `server/dist/index.js` עם `NODE_ENV=production` ומגדיר את שם התהליך, לוגים, והפעלה‑מחדש אוטומטית. ודאו שהרצתם תחילה `npm run build:server` (שלב 8) כך שה‑`dist` קיים.
@@ -228,10 +228,10 @@ curl http://127.0.0.1:3001/health
 
 ## 12. הגדרת Nginx כ‑reverse proxy
 
-המאגר כולל תבנית מוכנה ב‑`scripts/nginx-example.conf`. העתיקו אותה אל `sites-available`, החליפו את שם השרת בדומיין שלכם, צרו symlink אל `sites-enabled`, ובדקו תקינות:
+המאגר כולל תבנית מוכנה ב‑`server/scripts/nginx-example.conf`. העתיקו אותה אל `sites-available`, החליפו את שם השרת בדומיין שלכם, צרו symlink אל `sites-enabled`, ובדקו תקינות:
 
 ```bash
-sudo cp scripts/nginx-example.conf /etc/nginx/sites-available/draftsync
+sudo cp server/scripts/nginx-example.conf /etc/nginx/sites-available/draftsync
 # ערכו את server_name כך שיתאים לדומיין שלכם:
 sudo nano /etc/nginx/sites-available/draftsync
 
@@ -322,7 +322,7 @@ git pull
 npm ci                 # אם השתנו תלויות
 npm run build:server   # הידור מחדש אל server/dist
 npm run migrate        # מחיל מיגרציות חדשות (בטוח להריץ גם אם אין חדשות)
-pm2 restart scripts/ecosystem.config.cjs   # או: pm2 restart <שם-התהליך>
+pm2 restart server/scripts/ecosystem.config.cjs   # או: pm2 restart <שם-התהליך>
 ```
 
 לאחר אימות שהשירות חי שוב, אין צורך ב‑`pm2 save` נוסף אלא אם שיניתם את הגדרת ה‑`ecosystem` עצמה.
@@ -331,7 +331,7 @@ pm2 restart scripts/ecosystem.config.cjs   # או: pm2 restart <שם-התהלי�
 curl https://drafts-api.example.com/health   # אימות אחרי הפריסה
 ```
 
-> **גיבוי לפני מיגרציות:** לפני עדכון שכולל שינויי סכמה, גבו את מסד הנתונים עם `npm run backup` (מריץ את `scripts/backup-db.sh` ושומר עותק של קובץ ה‑SQLite). ראו גם `docs/SECURITY.md`.
+> **גיבוי לפני מיגרציות:** לפני עדכון שכולל שינויי סכמה, גבו את מסד הנתונים עם `npm run backup` (מריץ את `server/scripts/backup-db.sh` ושומר עותק של קובץ ה‑SQLite). ראו גם `docs/SECURITY.md`.
 
 ---
 
@@ -373,8 +373,7 @@ sudo tail -f /var/log/nginx/error.log
 
 ```bash
 cd ~/draftsync
-chmod +x scripts/install-server.sh
-./scripts/install-server.sh
+sudo bash server/scripts/install-server.sh
 ```
 
 > הסקריפט הוא נקודת זינוק. עדיין עליכם להשלים ידנית את השלבים הרגישים/הספציפיים לסביבה: הזנת `SYNC_KEY_PEPPER` אמיתי ב‑`server/.env` (שלב 9), התאמת `server_name` ב‑Nginx (שלב 12), והנפקת התעודה עם `certbot --nginx -d drafts-api.example.com` (שלב 13). קראו את הסקריפט לפני הרצה כדי לדעת מה בדיוק הוא מבצע על המכונה שלכם.
