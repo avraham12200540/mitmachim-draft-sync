@@ -308,7 +308,7 @@ curl https://drafts-api.example.com/health
 { "ok": true, "version": "1.0.0", "time": "2026-06-15T10:20:30.000Z", "uptimeSec": 1234 }
 ```
 
-אם קיבלתם את התגובה הזו — השרת מותקן, מאובטח ב‑TLS, ופועל. עדכנו את כתובת ה‑API בתוסף ל‑`https://drafts-api.example.com` (ראו `docs/SERVER_DEPLOYMENT` של התוסף / שדה ה‑"מתקדם" בפופ‑אפ).
+אם קיבלתם את התגובה הזו — השרת מותקן, מאובטח ב‑TLS, ופועל. התוסף מכוון כברירת מחדל אל `https://drafts-api.extsync.com`; כדי להפנות אותו אל הדומיין שלכם, מפתח עורך את `DEFAULT_API_URL` ב‑`extension/src/config.ts` ואת ה‑host ב‑`host_permissions` שב‑`manifest.json`, ואז בונה מחדש את התוסף.
 
 ---
 

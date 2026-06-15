@@ -54,14 +54,12 @@
 
 התוסף לא מצליח להגיע לשרת (timeouts, "Failed to fetch", או הכל נכנס לתור).
 
-1. ודאו מה כתובת ה‑API שהתוסף משתמש בה:
-   - ברירת המחדל המהודרת היא `DEFAULT_API_URL` ב‑`extension/src/config.ts` (`https://drafts-api.example.com` — placeholder, **לא שרת אמיתי**).
-   - אפשר לדרוס אותה בשדה ה‑"advanced" בפופאפ; הערך נשמר ב‑`chrome.storage.local`.
-2. אם אתם משתמשים בשרת אמיתי, ודאו שהכתובת מצביעה אליו (למשל `https://drafts-api.example.com` או הדומיין שלכם), ולא ל‑placeholder.
-3. בדקו שהשרת חי עם `/health` — ראו "[בדיקת `/health` עם curl](#בדיקת-health-עם-curl)".
-4. ודאו ש‑host permission ניתן לכתובת. אם הזנתם URL מותאם בפופאפ, התוסף מבקש הרשאת host בזמן ריצה (`optional_host_permissions: https://*/*`). אם דחיתם את הבקשה — הקריאות ייכשלו. הזינו את הכתובת שוב ואשרו את ההרשאה.
-5. אם השרת זמין אבל הקריאות עדיין נכשלות — בדקו CORS ("[שגיאות CORS](#שגיאות-cors)") ו‑HTTPS/תעודה ("[בעיות HTTPS/תעודה](#בעיות-httpsתעודה)").
-6. כל עוד השרת לא זמין, הטיוטות נשמרות ב‑offline queue (`mds.pendingQueue`) ונשלחות שוב אוטומטית כל ~2 דקות. אין צורך לשמור ידנית.
+> כתובת ה‑API קבועה בקוד: `DEFAULT_API_URL` ב‑`extension/src/config.ts` מצביעה על `https://drafts-api.extsync.com`. אין שדה כתובת שרת בפופאפ ואי אפשר לשנות את הכתובת מה‑UI — אז התקלה כמעט תמיד היא שהשרת עצמו לא זמין, ולא שהוזנה כתובת שגויה.
+
+1. בדקו שהשרת חי עם `/health` — ראו "[בדיקת `/health` עם curl](#בדיקת-health-עם-curl)". אם `/health` לא עונה, הבעיה בשרת/Nginx/DNS/תעודה ולא בתוסף.
+2. שימו לב להודעת השגיאה בפופאפ: היא ספציפית. `קוד הסנכרון שגוי` מציין שה‑Sync Key שגוי (השרת הגיב אך דחה את האימות), בעוד `לא ניתן להגיע לשרת` מציין שלא הצלחנו בכלל להגיע לשרת — מה שמכוון לתקלת זמינות (השרת למטה, רשת, DNS, תעודה).
+3. אם השרת זמין אבל הקריאות עדיין נכשלות — בדקו CORS ("[שגיאות CORS](#שגיאות-cors)") ו‑HTTPS/תעודה ("[בעיות HTTPS/תעודה](#בעיות-httpsתעודה)").
+4. כל עוד השרת לא זמין, הטיוטות נשמרות ב‑offline queue (`mds.pendingQueue`) ונשלחות שוב אוטומטית כל ~2 דקות. אין צורך לשמור ידנית.
 
 בצד השרת, ודאו שהתהליך רץ ומאזין:
 ```bash
@@ -89,7 +87,7 @@ ss -ltnp | grep 3001
 3. אם Nginx באמצע — ודאו שהוא **לא** מוחק/משכפל כותרות `Access-Control-*`. בדרך כלל עדיף לתת ל‑Fastify לטפל ב‑CORS ולא להוסיף `add_header` כפול ב‑Nginx (כפילות שוברת את הדפדפן).
 4. בקשת preflight (`OPTIONS`) חייבת לחזור `2xx`. בדקו:
    ```bash
-   curl -i -X OPTIONS https://drafts-api.example.com/api/drafts \
+   curl -i -X OPTIONS https://drafts-api.extsync.com/api/drafts \
      -H "Origin: chrome-extension://<your-extension-id>" \
      -H "Access-Control-Request-Method: POST"
    ```
@@ -104,7 +102,7 @@ ss -ltnp | grep 3001
 1. כתובת ה‑API חייבת להיות `https://` (גם המניפסט וגם host_permissions בנויים סביב HTTPS). `http://` לא יעבוד מתוך עמוד מאובטח.
 2. בדקו את התעודה מהשרת עצמו:
    ```bash
-   curl -vI https://drafts-api.example.com/health
+   curl -vI https://drafts-api.extsync.com/health
    ```
    חפשו `SSL certificate verify ok`. אם יש `certificate has expired` — חדשו את התעודה.
 3. חידוש/הנפקה עם certbot (Let's Encrypt):
@@ -113,7 +111,7 @@ ss -ltnp | grep 3001
    sudo certbot renew
    sudo systemctl reload nginx
    ```
-4. ודאו שהדומיין ב‑URL תואם ל‑Common Name/SAN בתעודה. תעודה ל‑`drafts-api.example.com` לא תתאים לכתובת IP או לדומיין אחר.
+4. ודאו שהדומיין ב‑URL תואם ל‑Common Name/SAN בתעודה. תעודה ל‑`drafts-api.extsync.com` לא תתאים לכתובת IP או לדומיין אחר.
 5. תעודות self-signed לא יעבדו מול הדפדפן ללא הוספה ידנית למאגר האמון. בפרודקשן השתמשו ב‑Let's Encrypt.
 6. אחרי תיקון התעודה, רעננו את ה‑service worker (כפתור ⟳ ב‑`chrome://extensions`) כדי לאפס חיבורים תקועים.
 
@@ -181,7 +179,7 @@ npm run watch:extension
 חיברתם מכשיר נוסף אבל הוא לא רואה את הטיוטות מהמחשב הראשון.
 
 1. **אותו Sync Key.** שני המכשירים חייבים להיות מחוברים לאותו משתמש. במחשב השני בצעו **login** עם **אותו ה‑Sync Key בדיוק** שבו משתמש המחשב הראשון (פורמט `MTD-XXXX-XXXX-XXXX`). יצירת Sync Key חדש (**create-sync-key**) יוצרת **משתמש נפרד** עם טיוטות נפרדות — זו הטעות הנפוצה ביותר.
-2. **אותה כתובת שרת.** ודאו ששני המכשירים מצביעים לאותו `API URL` (אותו `DEFAULT_API_URL` או אותו ערך שהוזן בשדה ה‑"advanced" בפופאפ). שני שרתים = שני מאגרים נפרדים.
+2. **אותה כתובת שרת.** כל מכשיר עם אותה גרסת תוסף מצביע לאותו `DEFAULT_API_URL` הקבוע בקוד (`https://drafts-api.extsync.com`), אז זה כמעט אף פעם לא הבעיה. אם מישהו בנה גרסה מותאמת עם `DEFAULT_API_URL` אחר, ודאו ששני המכשירים מריצים את אותה הבנייה — שני שרתים = שני מאגרים נפרדים.
 3. בדקו תחת **Devices** (`GET /api/devices`) שהמכשיר השני אכן מופיע כמכשיר של אותו משתמש.
 4. הסנכרון אינו בזמן אמת מיידי — המכשיר השני מושך טיוטות כשנפתח composer/בעת סנכרון. רעננו את עמוד mitmachim.top במחשב השני.
 5. אם המכשיר השני **רואה** את הטיוטה אך לא מצליח לקרוא אותה — זו בעיית הצפנה (Sync Key לא תואם בפענוח). ראו את הפרק הבא.
@@ -227,7 +225,7 @@ npm run watch:extension
 `GET /health` הוא נקודת בדיקת חיים ללא אימות. הוא הדרך המהירה לוודא שהשרת חי.
 
 ```bash
-curl -s https://drafts-api.example.com/health
+curl -s https://drafts-api.extsync.com/health
 ```
 
 תגובה תקינה:
@@ -244,7 +242,7 @@ curl -s http://127.0.0.1:3001/health
 - אם גם המקומית נכשלת → התהליך לא רץ. בדקו `pm2 status` ו‑`pm2 logs`.
 - כדי לראות גם קודי HTTP וכותרות:
   ```bash
-  curl -i https://drafts-api.example.com/health
+  curl -i https://drafts-api.extsync.com/health
   ```
 
 ---

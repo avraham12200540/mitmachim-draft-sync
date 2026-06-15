@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Mitmachim Draft Sync",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "סנכרון טיוטות בפורום מתמחים טופ בין מחשבים, בהצפנה מקצה לקצה. אינו נוגע בפרטי ההתחברות לפורום.",
   "permissions": ["storage", "alarms"],
   "host_permissions": [
