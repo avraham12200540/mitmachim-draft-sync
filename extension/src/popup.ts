@@ -166,7 +166,8 @@ function btn(
   return b;
 }
 
-function flash(b: HTMLButtonElement, text: string): void {
+function flash(b: HTMLButtonElement | null, text: string): void {
+  if (!b) return;
   const prev = b.textContent;
   b.textContent = text;
   b.disabled = true;
@@ -271,10 +272,12 @@ function wire(): void {
   });
 
   $('btn-copy-key').addEventListener('click', async (e) => {
+    // Capture the button now: after an await, e.currentTarget becomes null.
+    const b = e.currentTarget as HTMLButtonElement;
     const auth = await getAuth();
     if (auth.syncKey) {
       await navigator.clipboard.writeText(auth.syncKey);
-      flash(e.currentTarget as HTMLButtonElement, 'הועתק ✓');
+      flash(b, 'הועתק ✓');
     }
   });
 
