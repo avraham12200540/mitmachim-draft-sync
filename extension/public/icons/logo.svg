@@ -1,0 +1,39 @@
+<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Mitmachim Draft Sync">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#6CC0E8"/>
+      <stop offset="1" stop-color="#3597C7"/>
+    </linearGradient>
+  </defs>
+  <rect x="16" y="16" width="480" height="480" rx="116" fill="url(#bg)"/>
+
+  <!-- globe + circuit traces -->
+  <g fill="none" stroke="#ffffff" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="190" cy="256" r="120" stroke-width="18"/>
+    <ellipse cx="190" cy="256" rx="46" ry="120" stroke-width="13"/>
+    <path d="M74 256 H306" stroke-width="13"/>
+    <path d="M312 178 H356 V126" stroke-width="15"/>
+    <path d="M312 228 H398" stroke-width="15"/>
+    <path d="M312 330 H360 V390" stroke-width="15"/>
+    <path d="M312 282 H404" stroke-width="15"/>
+    <path d="M372 282 V216 H444" stroke-width="13"/>
+  </g>
+
+  <!-- device nodes -->
+  <g fill="#ffffff">
+    <circle cx="356" cy="122" r="15"/>
+    <circle cx="398" cy="228" r="14"/>
+    <circle cx="360" cy="390" r="15"/>
+    <circle cx="444" cy="216" r="12"/>
+  </g>
+
+  <!-- the draft (a document) as the main synced endpoint -->
+  <g>
+    <rect x="404" y="248" width="58" height="70" rx="10" fill="#ffffff"/>
+    <g stroke="#3597C7" stroke-width="7" stroke-linecap="round">
+      <path d="M418 270 H448"/>
+      <path d="M418 284 H448"/>
+      <path d="M418 298 H440"/>
+    </g>
+  </g>
+</svg>

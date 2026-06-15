@@ -91,6 +91,8 @@ async function encryptContext(
     encryptionIv: ivOf(encryptedContent),
     encryptionSalt: ENCRYPTION_SCHEME,
     categoryId: context.categoryId ?? null,
+    categoryName: context.categoryName ?? null,
+    topicType: context.topicType ?? null,
     topicId: context.topicId ?? null,
     postId: context.postId ?? null,
     url: context.url ?? null,
@@ -122,6 +124,8 @@ async function toDecrypted(dto: DraftDTO): Promise<DecryptedDraft> {
     title,
     content,
     categoryId: dto.categoryId,
+    categoryName: dto.categoryName,
+    topicType: dto.topicType,
     topicId: dto.topicId,
     postId: dto.postId,
     url: dto.url,
@@ -143,6 +147,8 @@ async function toSummary(dto: DraftDTO): Promise<DecryptedDraftSummary> {
     topicId: d.topicId,
     postId: d.postId,
     categoryId: d.categoryId,
+    categoryName: d.categoryName,
+    topicType: d.topicType,
     localDraftKey: d.localDraftKey,
     deviceName: d.deviceName,
     serverUpdatedAt: d.serverUpdatedAt,
@@ -396,6 +402,23 @@ async function handle(req: BgRequest): Promise<BgResponse> {
       try {
         const dto = await buildClient(await getAuth()).matchDraft(req.match);
         return { ok: true, draft: dto ? await toDecrypted(dto) : null };
+      } catch (err) {
+        return { ok: false, error: err instanceof ApiError ? err.message : 'error' };
+      }
+    }
+
+    case 'DELETE_DRAFT_BY_CONTEXT': {
+      // The user deleted the matching draft from the forum's native drafts —
+      // mirror that by deleting our synced copy.
+      if (!(await isConnected())) return { ok: true };
+      try {
+        const client = buildClient(await getAuth());
+        const dto = await client.matchDraft(req.match);
+        if (dto) {
+          await client.deleteDraft(dto.id);
+          log.event('draft:deleted-by-context', { key: req.match.localDraftKey });
+        }
+        return { ok: true };
       } catch (err) {
         return { ok: false, error: err instanceof ApiError ? err.message : 'error' };
       }

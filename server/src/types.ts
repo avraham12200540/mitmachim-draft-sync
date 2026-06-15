@@ -13,6 +13,8 @@ export interface DraftRow {
   encryption_iv: string | null;
   encryption_salt: string | null;
   category_id: string | null;
+  category_name: string | null;
+  topic_type: string | null;
   topic_id: string | null;
   post_id: string | null;
   url: string | null;
@@ -62,6 +64,8 @@ export interface DraftDTO {
   encryptionIv: string | null;
   encryptionSalt: string | null;
   categoryId: string | null;
+  categoryName: string | null;
+  topicType: string | null;
   topicId: string | null;
   postId: string | null;
   url: string | null;

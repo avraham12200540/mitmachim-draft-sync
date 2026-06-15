@@ -6,6 +6,9 @@ node_modules/
 dist/
 build/
 *.tsbuildinfo
+*.zip
+# Stray root-level bundle (the real entry is extension/src/background.ts)
+/extension/background.js
 
 # Environment / secrets — NEVER commit these
 .env

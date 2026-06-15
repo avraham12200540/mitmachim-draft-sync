@@ -56,3 +56,61 @@ export const ID_ATTRIBUTES = {
   pid: ['data-pid', 'data-post-id'],
   action: ['data-action-type', 'data-action'],
 } as const;
+
+// ---------------------------------------------------------------------------
+// New-topic extras: category selector + "סוג נושא" (topic type) selector.
+// (Mitmachim/NodeBB markup — see docs/TROUBLESHOOTING.md to update.)
+// ---------------------------------------------------------------------------
+
+/** Element showing the currently selected category (its text is the name). */
+export const CATEGORY_SELECTED_SELECTORS: string[] = [
+  '[component="category-selector-selected"]',
+  '.category-selector .category-name',
+  '.category-name',
+];
+
+/** The category dropdown list + its selectable items (carry data-cid). */
+export const CATEGORY_LIST_SELECTORS: string[] = [
+  '[component="category/list"]',
+  '.category-dropdown-menu',
+];
+export const CATEGORY_ITEM_SELECTORS: string[] = [
+  '[data-cid]',
+  'a.dropdown-item',
+];
+
+/** The toggle button that opens the category dropdown. */
+export const CATEGORY_TOGGLE_SELECTORS: string[] = [
+  '[component="category-selector"] .dropdown-toggle',
+  '.category-dropdown-container .dropdown-toggle',
+];
+
+/** The topic-type ("סוג נושא") dropdown list + items. */
+export const TYPE_LIST_SELECTORS: string[] = ['[component="type/list"]'];
+export const TYPE_ITEM_SELECTORS: string[] = ['a.dropdown-item'];
+
+/** Composer discard/trash button (deleting the draft from within the editor). */
+export const COMPOSER_DISCARD_SELECTORS: string[] = [
+  '[component="composer/discard"]',
+  '[data-action="discard"]',
+  '.composer .trash',
+  '.composer [title*="מחק"]',
+];
+
+// ---------------------------------------------------------------------------
+// Native forum drafts (sidebar) — used to detect when the user deletes a draft.
+// ---------------------------------------------------------------------------
+
+export const DRAFTS_LIST_SELECTORS: string[] = [
+  '[component="drafts/list"]',
+  '.draft-list',
+];
+
+/** A single draft row; carries data-save-id linking to localStorage. */
+export const DRAFT_ITEM_SELECTORS: string[] = [
+  '[component="drafts/open"]',
+  '.draft-item-container [data-save-id]',
+];
+
+/** localStorage keys NodeBB uses for drafts. */
+export const NODEBB_DRAFTS_AVAILABLE_KEY = 'drafts:available';

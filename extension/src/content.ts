@@ -18,9 +18,19 @@ import {
   writeTitle,
   writeContent,
   readComposerIds,
+  readCategoryName,
+  readTopicType,
+  applyCategory,
+  applyTopicType,
   type EditorHandles,
 } from './dom/editorAdapter';
 import { parseUrl, buildLocalDraftKey } from './dom/urlParser';
+import {
+  NodebbDraftWatcher,
+  findDraftByContent,
+  nodebbActionToType,
+  type NodebbDraft,
+} from './dom/nodebbDrafts';
 import { StatusBar } from './ui/injectedStatusBar';
 import { RestoreModal } from './ui/restoreModal';
 import { showToast } from './ui/toast';
@@ -39,6 +49,11 @@ class ContentController {
   private readonly statusBar = new StatusBar();
   private readonly restoreModal = new RestoreModal();
   private watcher: ComposerWatcher;
+  private readonly draftWatcher = new NodebbDraftWatcher({
+    onDeleted: (key, draft) => this.onNativeDraftDeleted(key, draft),
+  });
+  /** Keys whose native draft was just deleted — don't re-create until the user types again. */
+  private readonly suppressedKeys = new Set<string>();
 
   private composer: HTMLElement | null = null;
   private dirty = false;
@@ -64,6 +79,7 @@ class ContentController {
 
   start(): void {
     this.watcher.start();
+    this.draftWatcher.start();
     // pagehide/visibilitychange fire earlier and more reliably than beforeunload
     // for SPA navigations; all are best-effort flushes of the last edit.
     window.addEventListener('beforeunload', () => this.saveImmediately());
@@ -115,23 +131,57 @@ class ContentController {
     this.restoreModal.hide();
   }
 
+  /** The forum's native draft was removed (discarded, deleted, or posted) — mirror the delete. */
+  private onNativeDraftDeleted(localDraftKey: string, draft: NodebbDraft): void {
+    const type = nodebbActionToType(draft.action);
+    if (!type) return;
+    this.suppressedKeys.add(localDraftKey);
+    if (this.lastContext?.localDraftKey === localDraftKey) {
+      this.dirty = false;
+      this.lastSentHash = null;
+    }
+    void sendToBackground({
+      type: 'DELETE_DRAFT_BY_CONTEXT',
+      match: {
+        type,
+        localDraftKey,
+        topicId: draft.tid ?? null,
+        postId: draft.pid ?? null,
+        categoryId: draft.cid ?? null,
+      },
+    });
+    log.event('draft:native-deleted-mirrored', { key: localDraftKey });
+  }
+
   // -- context construction --------------------------------------------------
 
   private buildContext(handles: EditorHandles): DraftContext {
     const urlInfo = parseUrl(location.href);
     const ids = readComposerIds(handles.composer);
+    const content = readContent(handles);
+    const title = readTitle(handles);
 
-    const categoryId = ids.cid ?? urlInfo.categoryId;
-    const topicId = ids.tid ?? urlInfo.topicId;
-    const postId = ids.pid ?? urlInfo.postId;
+    // Prefer the forum's own draft record (authoritative cid/tid/pid + action),
+    // so our localDraftKey matches NodeBB's and delete-mirroring stays exact.
+    const nb = findDraftByContent(content);
+
+    const categoryId = nb?.cid ?? ids.cid ?? urlInfo.categoryId;
+    const topicId = nb?.tid ?? ids.tid ?? urlInfo.topicId;
+    const postId = nb?.pid ?? ids.pid ?? urlInfo.postId;
     const action = ids.action ?? urlInfo.action;
     const hasTitle = !!handles.titleEl;
 
     let type: DraftType;
-    if ((action && action.toLowerCase().includes('edit')) || postId) type = 'edit';
+    const nbType = nodebbActionToType(nb?.action);
+    if (nbType) type = nbType;
+    else if ((action && action.toLowerCase().includes('edit')) || postId) type = 'edit';
     else if (hasTitle) type = 'topic';
     else if (topicId) type = 'reply';
     else type = urlInfo.inferredType ?? (hasTitle ? 'topic' : 'reply');
+
+    // Category name + "סוג נושא" only exist on the new-topic composer (null otherwise).
+    const categoryName = readCategoryName(handles.composer);
+    const topicType = readTopicType(handles.composer);
 
     const localDraftKey = buildLocalDraftKey({
       type,
@@ -144,9 +194,11 @@ class ContentController {
     return {
       type,
       forum: FORUM,
-      title: readTitle(handles),
-      content: readContent(handles),
+      title,
+      content,
       categoryId,
+      categoryName,
+      topicType,
       topicId,
       postId,
       url: location.href.slice(0, 2000),
@@ -175,7 +227,10 @@ class ContentController {
     // Snapshot the latest text so teardown/unload can flush it even if the
     // composer DOM is gone by then.
     const snapshot = this.currentContext();
-    if (snapshot && !this.isEmpty(snapshot)) this.lastContext = snapshot;
+    if (snapshot) {
+      this.suppressedKeys.delete(snapshot.localDraftKey); // user is writing again
+      if (!this.isEmpty(snapshot)) this.lastContext = snapshot;
+    }
     if (this.conflictPending) return; // wait until the user resolves the conflict
     if (this.saveTimer !== null) window.clearTimeout(this.saveTimer);
     this.statusBar.setStatus('saving');
@@ -187,6 +242,11 @@ class ContentController {
     const ctx = this.currentContext();
     if (!ctx) return;
     if (this.isEmpty(ctx)) {
+      this.statusBar.setStatus('idle');
+      return;
+    }
+    if (this.suppressedKeys.has(ctx.localDraftKey)) {
+      // Native draft was just deleted; don't resurrect it until the user types.
       this.statusBar.setStatus('idle');
       return;
     }
@@ -309,6 +369,8 @@ class ContentController {
         deviceName: server.deviceName,
         serverUpdatedAt: server.serverUpdatedAt,
         hasExistingContent,
+        categoryName: server.categoryName,
+        topicType: server.topicType,
       },
       (action) => {
         this.handledRestoreKeys.add(ctx.localDraftKey);
@@ -331,6 +393,12 @@ class ContentController {
         if (handles) {
           if (server.title) writeTitle(handles, server.title);
           writeContent(handles, server.content);
+        }
+        if (this.composer) {
+          if (server.categoryId || server.categoryName) {
+            applyCategory(this.composer, server.categoryId, server.categoryName);
+          }
+          if (server.topicType) applyTopicType(this.composer, server.topicType);
         }
         showToast('הטיוטה שוחזרה');
         break;

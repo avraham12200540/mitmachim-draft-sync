@@ -16,6 +16,8 @@ export interface DraftUpsertInput {
   encryptionIv?: string | null;
   encryptionSalt?: string | null;
   categoryId?: string | null;
+  categoryName?: string | null;
+  topicType?: string | null;
   topicId?: string | null;
   postId?: string | null;
   url?: string | null;
@@ -47,6 +49,8 @@ function toDTO(row: DraftRowWithDevice): DraftDTO {
     encryptionIv: row.encryption_iv,
     encryptionSalt: row.encryption_salt,
     categoryId: row.category_id,
+    categoryName: row.category_name,
+    topicType: row.topic_type,
     topicId: row.topic_id,
     postId: row.post_id,
     url: row.url,
@@ -183,7 +187,8 @@ export function upsertDraft(
     db.prepare(
       `UPDATE drafts SET
          type = ?, encrypted_title = ?, encrypted_content = ?, encryption_iv = ?,
-         encryption_salt = ?, category_id = ?, topic_id = ?, post_id = ?, url = ?,
+         encryption_salt = ?, category_id = ?, category_name = ?, topic_type = ?,
+         topic_id = ?, post_id = ?, url = ?,
          device_id = ?, client_updated_at = ?, server_updated_at = ?
        WHERE id = ? AND user_id = ?`,
     ).run(
@@ -193,6 +198,8 @@ export function upsertDraft(
       input.encryptionIv ?? null,
       input.encryptionSalt ?? null,
       input.categoryId ?? null,
+      input.categoryName ?? null,
+      input.topicType ?? null,
       input.topicId ?? null,
       input.postId ?? null,
       input.url ?? null,
@@ -210,9 +217,10 @@ export function upsertDraft(
   db.prepare(
     `INSERT INTO drafts (
        id, user_id, type, local_draft_key, encrypted_title, encrypted_content,
-       encryption_iv, encryption_salt, category_id, topic_id, post_id, url,
+       encryption_iv, encryption_salt, category_id, category_name, topic_type,
+       topic_id, post_id, url,
        device_id, client_updated_at, server_updated_at, created_at, deleted_at
-     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL)`,
+     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL)`,
   ).run(
     id,
     userId,
@@ -223,6 +231,8 @@ export function upsertDraft(
     input.encryptionIv ?? null,
     input.encryptionSalt ?? null,
     input.categoryId ?? null,
+    input.categoryName ?? null,
+    input.topicType ?? null,
     input.topicId ?? null,
     input.postId ?? null,
     input.url ?? null,
@@ -257,6 +267,8 @@ export function patchDraft(
     encryption_salt:
       patch.encryptionSalt !== undefined ? patch.encryptionSalt : existing.encryption_salt,
     category_id: patch.categoryId !== undefined ? patch.categoryId : existing.category_id,
+    category_name: patch.categoryName !== undefined ? patch.categoryName : existing.category_name,
+    topic_type: patch.topicType !== undefined ? patch.topicType : existing.topic_type,
     topic_id: patch.topicId !== undefined ? patch.topicId : existing.topic_id,
     post_id: patch.postId !== undefined ? patch.postId : existing.post_id,
     url: patch.url !== undefined ? patch.url : existing.url,
@@ -267,7 +279,8 @@ export function patchDraft(
     .prepare(
       `UPDATE drafts SET
          type = ?, encrypted_title = ?, encrypted_content = ?, encryption_iv = ?,
-         encryption_salt = ?, category_id = ?, topic_id = ?, post_id = ?, url = ?,
+         encryption_salt = ?, category_id = ?, category_name = ?, topic_type = ?,
+         topic_id = ?, post_id = ?, url = ?,
          device_id = ?, client_updated_at = ?, server_updated_at = ?
        WHERE id = ? AND user_id = ?`,
     )
@@ -278,6 +291,8 @@ export function patchDraft(
       merged.encryption_iv,
       merged.encryption_salt,
       merged.category_id,
+      merged.category_name,
+      merged.topic_type,
       merged.topic_id,
       merged.post_id,
       merged.url,

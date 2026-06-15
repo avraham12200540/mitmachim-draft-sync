@@ -9,6 +9,8 @@ export interface RestoreInfo {
   deviceName: string | null;
   serverUpdatedAt: string;
   hasExistingContent: boolean;
+  categoryName?: string | null;
+  topicType?: string | null;
   /** Optional override heading (e.g. for the conflict variant). */
   heading?: string;
   /** Optional label for the primary (restore) button. */
@@ -43,7 +45,10 @@ export class RestoreModal {
 
     const sub = document.createElement('p');
     sub.className = 'mds-sub';
-    sub.textContent = `עודכנה ${timeAgo(info.serverUpdatedAt)}`;
+    const bits = [`עודכנה ${timeAgo(info.serverUpdatedAt)}`];
+    if (info.categoryName) bits.push(`קטגוריה: ${info.categoryName}`);
+    if (info.topicType) bits.push(`סוג: ${info.topicType}`);
+    sub.textContent = bits.join(' · ');
 
     const preview = document.createElement('div');
     preview.className = 'mds-preview';

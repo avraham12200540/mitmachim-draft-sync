@@ -13,6 +13,8 @@ export interface DraftContext {
   title?: string;
   content: string;
   categoryId?: string | null;
+  categoryName?: string | null;
+  topicType?: string | null;
   topicId?: string | null;
   postId?: string | null;
   url: string;
@@ -38,6 +40,8 @@ export interface DraftUpsert {
   encryptionIv?: string | null;
   encryptionSalt?: string | null;
   categoryId?: string | null;
+  categoryName?: string | null;
+  topicType?: string | null;
   topicId?: string | null;
   postId?: string | null;
   url?: string | null;
@@ -55,6 +59,8 @@ export interface DraftDTO {
   encryptionIv: string | null;
   encryptionSalt: string | null;
   categoryId: string | null;
+  categoryName: string | null;
+  topicType: string | null;
   topicId: string | null;
   postId: string | null;
   url: string | null;
@@ -74,6 +80,8 @@ export interface DecryptedDraft {
   title: string;
   content: string;
   categoryId: string | null;
+  categoryName: string | null;
+  topicType: string | null;
   topicId: string | null;
   postId: string | null;
   url: string | null;
@@ -93,6 +101,8 @@ export interface DecryptedDraftSummary {
   topicId: string | null;
   postId: string | null;
   categoryId: string | null;
+  categoryName: string | null;
+  topicType: string | null;
   localDraftKey: string;
   deviceName: string | null;
   serverUpdatedAt: string;
@@ -147,6 +157,7 @@ export type BgRequest =
   | { type: 'DELETE_DRAFT'; id: string }
   | { type: 'SAVE_DRAFT'; context: DraftContext; expectedServerUpdatedAt?: string | null }
   | { type: 'MATCH_DRAFT'; match: MatchQuery }
+  | { type: 'DELETE_DRAFT_BY_CONTEXT'; match: MatchQuery }
   | { type: 'FLUSH_QUEUE' };
 
 export interface SaveResult {

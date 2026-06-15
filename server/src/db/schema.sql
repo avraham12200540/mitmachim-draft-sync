@@ -43,6 +43,8 @@ CREATE TABLE IF NOT EXISTS drafts (
   encryption_iv      TEXT,
   encryption_salt    TEXT,
   category_id        TEXT,
+  category_name      TEXT,
+  topic_type         TEXT,
   topic_id           TEXT,
   post_id            TEXT,
   url                TEXT,

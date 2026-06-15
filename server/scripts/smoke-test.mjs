@@ -41,11 +41,15 @@ const main = async () => {
     encryptedContent: '1.aaaa.bbbb',
     encryptedTitle: '1.cccc.dddd',
     categoryId: '5',
+    categoryName: 'עזרה הדדית - מחשבים וטכנולוגיה',
+    topicType: 'שיתוף',
     url: 'https://mitmachim.top/category/5/test',
     clientUpdatedAt: new Date().toISOString(),
   };
   r = await call('POST', '/api/drafts', payload);
   assert(r.status === 200 && r.body.ok && r.body.draft.id, 'upsert create');
+  assert(r.body.draft.categoryName === 'עזרה הדדית - מחשבים וטכנולוגיה', 'categoryName persisted');
+  assert(r.body.draft.topicType === 'שיתוף', 'topicType persisted');
   const id = r.body.draft.id;
 
   // Upsert same key again -> should update, not duplicate.

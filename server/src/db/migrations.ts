@@ -83,7 +83,20 @@ CREATE INDEX IF NOT EXISTS idx_drafts_updated      ON drafts (server_updated_at)
 CREATE INDEX IF NOT EXISTS idx_sync_events_user    ON sync_events (user_id, created_at);
 `;
 
-const MIGRATIONS: Migration[] = [{ version: 1, name: 'initial_schema', sql: MIGRATION_1 }];
+/**
+ * Migration #2 — add `topic_type` (the forum "סוג נושא" selection) and
+ * `category_name` (human-readable category) as non-sensitive metadata so a
+ * restored new-topic draft can re-apply the user's category + type.
+ */
+const MIGRATION_2 = `
+ALTER TABLE drafts ADD COLUMN topic_type TEXT;
+ALTER TABLE drafts ADD COLUMN category_name TEXT;
+`;
+
+const MIGRATIONS: Migration[] = [
+  { version: 1, name: 'initial_schema', sql: MIGRATION_1 },
+  { version: 2, name: 'topic_type_and_category_name', sql: MIGRATION_2 },
+];
 
 /**
  * Applies any migrations not yet recorded in `_migrations`. Idempotent and safe

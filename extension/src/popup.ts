@@ -112,6 +112,16 @@ function renderDraft(d: DecryptedDraftSummary): HTMLElement {
   const when = document.createElement('span');
   when.textContent = `עודכן ${timeAgo(d.serverUpdatedAt)}`;
   meta.append(when);
+  if (d.categoryName) {
+    const cat = document.createElement('span');
+    cat.textContent = `קטגוריה: ${d.categoryName}`;
+    meta.append(cat);
+  }
+  if (d.topicType) {
+    const tt = document.createElement('span');
+    tt.textContent = `סוג: ${d.topicType}`;
+    meta.append(tt);
+  }
   if (d.deviceName) {
     const dev = document.createElement('span');
     dev.textContent = `מכשיר: ${d.deviceName}`;
