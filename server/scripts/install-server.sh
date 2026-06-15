@@ -80,7 +80,12 @@ fi
 
 if [ "${need_node}" -eq 1 ]; then
   echo "[install]   מתקין Node.js v${NODE_MAJOR} (LTS) דרך NodeSource..."
-  curl -fsSL "https://deb.nodesource.com/setup_${NODE_MAJOR}.x" | ${SUDO} -E bash -
+  # NOTE: ${SUDO} is empty when running as root, so no extra flags may follow it
+  # unconditionally (a leaked '-E' would be parsed as a command). Pipe the
+  # NodeSource setup script straight into bash (via sudo only when not root).
+  curl -fsSL "https://deb.nodesource.com/setup_${NODE_MAJOR}.x" -o /tmp/nodesource_setup.sh
+  ${SUDO} bash /tmp/nodesource_setup.sh
+  rm -f /tmp/nodesource_setup.sh
   ${SUDO} apt-get install -y nodejs
 fi
 echo "[install]   Node: $(node -v) | npm: $(npm -v)"
