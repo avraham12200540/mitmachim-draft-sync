@@ -24,7 +24,8 @@ async function setRaw(key: string, value: unknown): Promise<void> {
 
 export async function getAuth(): Promise<StoredAuth> {
   const stored = await getRaw<Partial<StoredAuth>>(STORAGE_KEYS.auth);
-  return { ...DEFAULT_AUTH, ...(stored ?? {}) };
+  // apiUrl is fixed in code — always force it, ignoring any older stored value.
+  return { ...DEFAULT_AUTH, ...(stored ?? {}), apiUrl: DEFAULT_API_URL };
 }
 
 export async function setAuth(patch: Partial<StoredAuth>): Promise<StoredAuth> {

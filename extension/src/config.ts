@@ -4,8 +4,12 @@
 // compiled default, edit DEFAULT_API_URL below and rebuild.
 // ============================================================================
 
-/** Default private API base URL. Change this and rebuild, or set it in the popup. */
-export const DEFAULT_API_URL = 'https://drafts-api.example.com';
+/**
+ * The private API base URL. Fixed — the extension always talks to this server
+ * and the popup has no field to change it (avoids misconfiguration). To point
+ * at a different server, edit this and rebuild + update manifest host_permissions.
+ */
+export const DEFAULT_API_URL = 'https://drafts-api.extsync.com';
 
 /** chrome.storage.local keys. */
 export const STORAGE_KEYS = {

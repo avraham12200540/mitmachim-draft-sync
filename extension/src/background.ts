@@ -66,6 +66,15 @@ function clearKey(): void {
   cachedKeyFor = null;
 }
 
+/** Maps an auth failure to a stable code the popup can show a clear message for. */
+function authErrorCode(err: unknown): 'network' | 'INVALID_SYNC_KEY' | 'error' {
+  if (err instanceof ApiError) {
+    if (err.isOffline) return 'network';
+    if (err.code === 'INVALID_SYNC_KEY' || err.status === 401) return 'INVALID_SYNC_KEY';
+  }
+  return 'error';
+}
+
 function buildClient(auth: StoredAuth): ApiClient {
   return new ApiClient({ baseUrl: auth.apiUrl, token: auth.accessToken });
 }
@@ -303,7 +312,12 @@ async function handle(req: BgRequest): Promise<BgResponse> {
     case 'CREATE_SYNC_KEY': {
       const auth = await getAuth();
       const client = buildClient({ ...auth, accessToken: null });
-      const res = await client.createSyncKey(req.deviceName);
+      let res;
+      try {
+        res = await client.createSyncKey(req.deviceName);
+      } catch (err) {
+        return { ok: false, error: authErrorCode(err) };
+      }
       await setAuth({
         syncKey: res.syncKey,
         accessToken: res.accessToken,
@@ -320,7 +334,12 @@ async function handle(req: BgRequest): Promise<BgResponse> {
     case 'LOGIN': {
       const auth = await getAuth();
       const client = buildClient({ ...auth, accessToken: null });
-      const res = await client.login(req.syncKey, req.deviceName);
+      let res;
+      try {
+        res = await client.login(req.syncKey, req.deviceName);
+      } catch (err) {
+        return { ok: false, error: authErrorCode(err) };
+      }
       await setAuth({
         syncKey: req.syncKey,
         accessToken: res.accessToken,

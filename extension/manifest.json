@@ -6,9 +6,8 @@
   "permissions": ["storage", "alarms"],
   "host_permissions": [
     "https://mitmachim.top/*",
-    "https://drafts-api.example.com/*"
+    "https://drafts-api.extsync.com/*"
   ],
-  "optional_host_permissions": ["https://*/*"],
   "background": {
     "service_worker": "background.js"
   },

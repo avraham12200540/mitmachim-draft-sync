@@ -42,9 +42,6 @@ async function render(): Promise<void> {
 
   if (!status) return;
 
-  // Disconnected screen: prefill API URL.
-  ($('api-url') as HTMLInputElement).value = status.apiUrl;
-
   if (connected) {
     await renderConnected(status);
   }
@@ -181,45 +178,6 @@ function busy(b: HTMLButtonElement, on: boolean): void {
   b.disabled = on;
 }
 
-/**
- * Ensures the API URL in the field is stored and that the extension holds host
- * permission for it (requested at runtime for non-default hosts). Returns the
- * normalized URL, or null on failure.
- */
-async function ensureApiReady(): Promise<string | null> {
-  const raw = ($('api-url') as HTMLInputElement).value.trim();
-  let origin: string;
-  let url: string;
-  try {
-    const u = new URL(raw);
-    origin = `${u.origin}/*`;
-    url = u.toString();
-  } catch {
-    showError('disc-error', 'כתובת שרת לא תקינה.');
-    return null;
-  }
-
-  try {
-    const has = await chrome.permissions.contains({ origins: [origin] });
-    if (!has) {
-      const granted = await chrome.permissions.request({ origins: [origin] });
-      if (!granted) {
-        showError('disc-error', 'נדרשת הרשאת גישה לכתובת השרת כדי להמשיך.');
-        return null;
-      }
-    }
-  } catch {
-    // Permission API may reject for already-declared hosts; proceed anyway.
-  }
-
-  const res = await sendToBackground({ type: 'SET_API_URL', apiUrl: url });
-  if (!res.ok) {
-    showError('disc-error', 'כתובת שרת לא תקינה.');
-    return null;
-  }
-  return url;
-}
-
 // ---------------------------------------------------------------------------
 // Event wiring
 // ---------------------------------------------------------------------------
@@ -229,10 +187,6 @@ function wire(): void {
     const b = $('btn-create') as HTMLButtonElement;
     showError('disc-error', null);
     busy(b, true);
-    if (!(await ensureApiReady())) {
-      busy(b, false);
-      return;
-    }
     const deviceName = ($('device-name') as HTMLInputElement).value.trim() || undefined;
     const res = await sendToBackground({ type: 'CREATE_SYNC_KEY', deviceName });
     busy(b, false);
@@ -254,21 +208,11 @@ function wire(): void {
       return;
     }
     busy(b, true);
-    if (!(await ensureApiReady())) {
-      busy(b, false);
-      return;
-    }
     const deviceName = ($('device-name') as HTMLInputElement).value.trim() || undefined;
     const res = await sendToBackground({ type: 'LOGIN', syncKey, deviceName });
     busy(b, false);
     if (res.ok) await render();
     else showError('disc-error', errMsg(res, 'ההתחברות נכשלה. ודאו שהקוד נכון.'));
-  });
-
-  $('btn-save-api').addEventListener('click', async () => {
-    showError('disc-error', null);
-    const ok = await ensureApiReady();
-    if (ok) flash($('btn-save-api') as HTMLButtonElement, 'נשמר ✓');
   });
 
   $('btn-copy-key').addEventListener('click', async (e) => {
@@ -312,8 +256,13 @@ function wire(): void {
 }
 
 function errMsg(res: BgResponse, fallback: string): string {
-  if (!res.ok && res.error && res.error !== 'error') {
-    if (res.error.includes('INVALID_SYNC_KEY')) return 'קוד הסנכרון שגוי.';
+  if (!res.ok && res.error) {
+    if (res.error === 'INVALID_SYNC_KEY' || res.error.includes('INVALID_SYNC_KEY')) {
+      return 'קוד הסנכרון שגוי.';
+    }
+    if (res.error === 'network') {
+      return 'לא ניתן להגיע לשרת. בדקו את החיבור לאינטרנט ונסו שוב.';
+    }
   }
   return fallback;
 }
