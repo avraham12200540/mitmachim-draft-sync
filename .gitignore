@@ -1,0 +1,43 @@
+# Dependencies
+node_modules/
+.npm/
+
+# Build output
+dist/
+build/
+*.tsbuildinfo
+
+# Environment / secrets — NEVER commit these
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+
+# Database & data (private user content)
+server/data/*.db
+server/data/*.db-shm
+server/data/*.db-wal
+server/data/*.sqlite
+server/backups/*.db
+server/backups/*.tar.gz
+server/backups/*.sql
+
+# Logs
+*.log
+logs/
+npm-debug.log*
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# Local Claude Code / tooling settings (machine-specific)
+.claude/
+
+# Keep placeholder dirs
+!server/data/.gitkeep
+!server/backups/.gitkeep

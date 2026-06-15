@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="popup.css" />
+    <title>Mitmachim Draft Sync</title>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <span class="logo">📝</span>
+        <span class="brand-name">Mitmachim Draft Sync</span>
+      </div>
+      <span id="conn-pill" class="pill">בודק…</span>
+    </header>
+
+    <main id="app">
+      <!-- Disconnected screen -->
+      <section id="screen-disconnected" class="screen hidden">
+        <p class="intro">
+          סנכרון טיוטות של מתמחים טופ בין המחשבים שלך. הטיוטות מוצפנות מקצה לקצה —
+          השרת לא רואה את התוכן, ואין שמירה של פרטי ההתחברות לפורום.
+        </p>
+
+        <label class="field">
+          <span>שם המכשיר (לזיהוי בלבד)</span>
+          <input id="device-name" type="text" placeholder="לדוגמה: מחשב בית" maxlength="80" />
+        </label>
+
+        <button id="btn-create" class="btn primary block">צור קוד סנכרון חדש</button>
+
+        <div class="divider"><span>או</span></div>
+
+        <label class="field">
+          <span>הדבק קוד סנכרון קיים</span>
+          <input id="sync-key-input" type="text" placeholder="MTD-XXXX-XXXX-XXXX" autocomplete="off" spellcheck="false" />
+        </label>
+        <button id="btn-login" class="btn block">התחבר</button>
+
+        <details class="advanced">
+          <summary>הגדרות מתקדמות</summary>
+          <label class="field">
+            <span>כתובת שרת ה‑API</span>
+            <input id="api-url" type="url" placeholder="https://drafts-api.example.com" />
+          </label>
+          <button id="btn-save-api" class="btn small">שמור כתובת</button>
+        </details>
+
+        <p id="disc-error" class="error hidden"></p>
+      </section>
+
+      <!-- Connected screen -->
+      <section id="screen-connected" class="screen hidden">
+        <div class="status-row">
+          <span class="status-ok">מחובר ✓</span>
+          <span id="pending-badge" class="pending hidden"></span>
+        </div>
+
+        <div class="key-box">
+          <div class="key-label">קוד הסנכרון שלך</div>
+          <div class="key-value"><code id="masked-key">—</code></div>
+          <div class="key-actions">
+            <button id="btn-copy-key" class="btn small">העתק קוד</button>
+            <button id="btn-toggle-key" class="btn small ghost">הצג</button>
+          </div>
+          <p class="warn">⚠️ אל תשתפו את הקוד עם אף אחד. מי שמחזיק בו יכול לקרוא את כל הטיוטות שלכם.</p>
+        </div>
+
+        <div class="toolbar">
+          <button id="btn-refresh" class="btn small">רענן</button>
+          <button id="btn-sync-now" class="btn small">סנכרן עכשיו</button>
+          <button id="btn-logout" class="btn small danger">התנתק מהמכשיר</button>
+        </div>
+
+        <h2 class="section-title">טיוטות אחרונות</h2>
+        <div id="drafts-list" class="drafts"></div>
+        <p id="drafts-empty" class="muted hidden">אין טיוטות שמורות עדיין.</p>
+        <p id="conn-error" class="error hidden"></p>
+
+        <label class="debug-row">
+          <input id="debug-toggle" type="checkbox" />
+          <span>מצב דיבוג (console logs)</span>
+        </label>
+      </section>
+    </main>
+
+    <script src="popup.js"></script>
+  </body>
+</html>

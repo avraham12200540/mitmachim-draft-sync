@@ -1,0 +1,38 @@
+{
+  "name": "mitmachim-draft-sync",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Chrome extension + private API server that syncs writing drafts in the Mitmachim Top forum across computers. End-to-end encrypted; never touches forum credentials.",
+  "license": "MIT",
+  "author": "",
+  "workspaces": [
+    "server",
+    "extension"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "install:all": "npm install",
+    "build": "npm run build:server && npm run build:extension",
+    "build:server": "npm run build --workspace server",
+    "build:extension": "npm run build --workspace extension",
+    "dev": "npm run dev:server",
+    "dev:server": "npm run dev --workspace server",
+    "watch:extension": "npm run watch --workspace extension",
+    "migrate": "npm run migrate --workspace server",
+    "backup": "npm run backup --workspace server",
+    "start:server": "npm run start --workspace server",
+    "lint": "npm run lint --workspaces --if-present",
+    "format": "prettier --write \"**/*.{ts,js,mjs,json,md,css,html}\"",
+    "format:check": "prettier --check \"**/*.{ts,js,mjs,json,md,css,html}\"",
+    "clean": "npm run clean --workspaces --if-present"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.17.0",
+    "eslint": "^9.17.0",
+    "globals": "^15.14.0",
+    "prettier": "^3.3.3",
+    "typescript-eslint": "^8.18.0"
+  }
+}

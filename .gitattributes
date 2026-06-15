@@ -1,0 +1,10 @@
+# Normalize all text files to LF in the repository so shell scripts and source
+# work correctly on Linux servers regardless of the committer's OS.
+* text=auto eol=lf
+
+# Shell scripts MUST be LF (CRLF breaks bash on Ubuntu).
+*.sh text eol=lf
+
+# Binary assets
+*.png binary
+*.ico binary

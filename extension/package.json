@@ -1,0 +1,21 @@
+{
+  "name": "@mds/extension",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Mitmachim Draft Sync — Chrome MV3 extension",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "build": "npm run typecheck && node build.mjs",
+    "watch": "node build.mjs --watch",
+    "lint": "eslint src",
+    "clean": "rimraf dist"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.0.287",
+    "esbuild": "^0.24.2",
+    "rimraf": "^6.0.1",
+    "typescript": "^5.7.2"
+  }
+}
